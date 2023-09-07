@@ -49,6 +49,10 @@ func (w *stdResultWriter) WithAPIConverage(apiConverage apispec.APIConverage) Re
 	return w
 }
 
+func (w *stdResultWriter) WithAllRecords(records []*ReportRecord) ReportResultWriter {
+	return w
+}
+
 func apiConveragePrint(result []ReportResult, apiConverage apispec.APIConverage, w io.Writer) {
 	if apiConverage == nil {
 		return

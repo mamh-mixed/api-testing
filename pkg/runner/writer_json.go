@@ -4,8 +4,9 @@ import (
 	_ "embed"
 	"encoding/json"
 	"fmt"
-	"github.com/linuxsuren/api-testing/pkg/apispec"
 	"io"
+
+	"github.com/linuxsuren/api-testing/pkg/apispec"
 )
 
 type jsonResultWriter struct {
@@ -29,5 +30,9 @@ func (w *jsonResultWriter) Output(result []ReportResult) (err error) {
 
 // WithAPIConverage sets the api coverage
 func (w *jsonResultWriter) WithAPIConverage(apiConverage apispec.APIConverage) ReportResultWriter {
+	return w
+}
+
+func (w *jsonResultWriter) WithAllRecords(records []*ReportRecord) ReportResultWriter {
 	return w
 }

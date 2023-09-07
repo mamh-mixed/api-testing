@@ -156,6 +156,7 @@ func (o *runOption) runE(cmd *cobra.Command, args []string) (err error) {
 	var reportErr error
 	var results runner.ReportResultSlice
 	if results, reportErr = o.reporter.ExportAllReportResults(); reportErr == nil {
+		o.reportWriter.WithAllRecords(o.reporter.GetAllRecords())
 		outputErr := o.reportWriter.Output(results)
 		println(cmd, outputErr, "failed to Output all reports", outputErr)
 	}

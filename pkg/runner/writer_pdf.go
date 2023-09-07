@@ -2,14 +2,15 @@ package runner
 
 import (
 	_ "embed"
-	
+
 	"fmt"
-	"github.com/linuxsuren/api-testing/pkg/apispec"
 	"io"
-	"github.com/signintech/gopdf"
-	"github.com/flopp/go-findfont"
 	"log"
 	"strconv"
+
+	"github.com/flopp/go-findfont"
+	"github.com/linuxsuren/api-testing/pkg/apispec"
+	"github.com/signintech/gopdf"
 )
 
 type pdfResultWriter struct {
@@ -23,7 +24,6 @@ func NewPDFResultWriter(writer io.Writer) ReportResultWriter {
 
 // Output writes the PDF base report to target writer
 func (w *pdfResultWriter) Output(result []ReportResult) (err error) {
-
 
 	pdf := gopdf.GoPdf{}
 	pdf.Start(gopdf.Config{PageSize: *gopdf.PageSizeA4})
@@ -85,7 +85,7 @@ func (w *pdfResultWriter) Output(result []ReportResult) (err error) {
 		}
 
 	}
-	
+
 	fmt.Fprint(w.writer, "Report is OK!")
 	pdf.WritePdf("Report.pdf")
 	return
@@ -93,5 +93,9 @@ func (w *pdfResultWriter) Output(result []ReportResult) (err error) {
 
 // WithAPIConverage sets the api coverage
 func (w *pdfResultWriter) WithAPIConverage(apiConverage apispec.APIConverage) ReportResultWriter {
+	return w
+}
+
+func (w *pdfResultWriter) WithAllRecords(records []*ReportRecord) ReportResultWriter {
 	return w
 }

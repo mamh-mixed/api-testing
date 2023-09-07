@@ -29,5 +29,9 @@ func (w *markdownResultWriter) WithAPIConverage(apiConverage apispec.APIConverag
 	return w
 }
 
+func (w *markdownResultWriter) WithAllRecords(records []*ReportRecord) ReportResultWriter {
+	return w
+}
+
 //go:embed data/report.md
 var markdownReport string

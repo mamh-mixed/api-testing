@@ -6,4 +6,5 @@ import "github.com/linuxsuren/api-testing/pkg/apispec"
 type ReportResultWriter interface {
 	Output([]ReportResult) error
 	WithAPIConverage(apiConverage apispec.APIConverage) ReportResultWriter
+	WithAllRecords(records []*ReportRecord) ReportResultWriter
 }
