@@ -22,7 +22,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/linuxsuren/api-testing/pkg/util/home"
 	"net"
 	"net/http"
 	"os"
@@ -32,6 +31,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/linuxsuren/api-testing/pkg/util/home"
 
 	_ "embed"
 	pprof "net/http/pprof"
@@ -101,8 +102,8 @@ func createServerCmd(execer fakeruntime.Execer, httpServer server.HTTPServer) (c
 	flags.IntVarP(&opt.gcPercent, "gc-percent", "", 100, "The GC percent of Go")
 	//grpc_tls
 	flags.BoolVarP(&opt.tls, "tls-grpc", "", false, "Enable TLS mode. Set to true to enable TLS. Alow SAN certificates")
-	flags.StringVarP(&opt.tlsCert, "cert-file", "", "","The path to the certificate file, Alow SAN certificates")
-	flags.StringVarP(&opt.tlsKey, "key-file", "", "", "The path to the key file, Alow SAN certificates")  
+	flags.StringVarP(&opt.tlsCert, "cert-file", "", "", "The path to the certificate file, Alow SAN certificates")
+	flags.StringVarP(&opt.tlsKey, "key-file", "", "", "The path to the key file, Alow SAN certificates")
 
 	c.Flags().MarkHidden("dry-run")
 	c.Flags().MarkHidden("gc-percent")
@@ -144,9 +145,9 @@ type serverOption struct {
 
 	// inner fields, not as command flags
 	provider oauth.OAuthProvider
-	tls bool
-	tlsCert string
-	tlsKey string
+	tls      bool
+	tlsCert  string
+	tlsKey   string
 }
 
 func (o *serverOption) preRunE(cmd *cobra.Command, args []string) (err error) {
@@ -185,7 +186,7 @@ func (o *serverOption) preRunE(cmd *cobra.Command, args []string) (err error) {
 				return fmt.Errorf("failed to load credentials: %v", err)
 			}
 			grpcOpts = append(grpcOpts, grpc.Creds(creds))
-		}		
+		}
 	}
 	if o.dryRun {
 		o.gRPCServer = &fakeGRPCServer{}
@@ -285,19 +286,21 @@ func (o *serverOption) runE(cmd *cobra.Command, args []string) (err error) {
 	gRPCServerAddr := fmt.Sprintf("127.0.0.1:%s", gRPCServerPort)
 
 	mux := runtime.NewServeMux(runtime.WithMetadata(server.MetadataStoreFunc))
-	if o.tls { 
-		creds,err:=credentials.NewClientTLSFromFile(o.tlsCert,"localhost")
-		if err!=nil{
-				return fmt.Errorf("failed to load credentials: %v", err)
+	var creds credentials.TransportCredentials
+	if o.tls {
+		o.httpServer.WithCert(o.tlsCert, o.tlsKey)
+		creds, err = credentials.NewClientTLSFromFile(o.tlsCert, "localhost")
+		if err != nil {
+			errors.Join(fmt.Errorf("failed to load credentials: %v", err))
 		}
-		err = errors.Join(
-			server.RegisterRunnerHandlerFromEndpoint(ctx, mux, gRPCServerAddr, []grpc.DialOption{grpc.WithTransportCredentials(creds)}),
-			server.RegisterMockHandlerFromEndpoint(ctx, mux, gRPCServerAddr, []grpc.DialOption{grpc.WithTransportCredentials(creds)}))
-	}else{
-		err = errors.Join(
-			server.RegisterRunnerHandlerFromEndpoint(ctx, mux, gRPCServerAddr, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}),
-			server.RegisterMockHandlerFromEndpoint(ctx, mux, gRPCServerAddr, []grpc.DialOption{grpc.WithTransportCredentials(insecure.NewCredentials())}))
+	} else {
+		creds = insecure.NewCredentials()
 	}
+
+	err = errors.Join(
+		server.RegisterRunnerHandlerFromEndpoint(ctx, mux, gRPCServerAddr, []grpc.DialOption{grpc.WithTransportCredentials(creds)}),
+		server.RegisterMockHandlerFromEndpoint(ctx, mux, gRPCServerAddr, []grpc.DialOption{grpc.WithTransportCredentials(creds)}))
+
 	if err == nil {
 		mux.HandlePath(http.MethodGet, "/", frontEndHandlerWithLocation(o.consolePath))
 		mux.HandlePath(http.MethodGet, "/assets/{asset}", frontEndHandlerWithLocation(o.consolePath))

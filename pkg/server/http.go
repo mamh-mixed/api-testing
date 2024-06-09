@@ -28,6 +28,7 @@ import (
 type HTTPServer interface {
 	Serve(lis net.Listener) error
 	WithHandler(handler http.Handler)
+	WithCert(certFile, keyFile string)
 	Shutdown(ctx context.Context) error
 	GetPort() string
 }
@@ -38,9 +39,10 @@ type CombineHandler interface {
 }
 
 type defaultHTTPServer struct {
-	listener net.Listener
-	server   *http.Server
-	handler  http.Handler
+	listener          net.Listener
+	server            *http.Server
+	handler           http.Handler
+	certFile, keyFile string
 }
 
 // NewDefaultHTTPServer creates a default HTTP server
@@ -51,12 +53,21 @@ func NewDefaultHTTPServer() HTTPServer {
 func (s *defaultHTTPServer) Serve(lis net.Listener) (err error) {
 	s.listener = lis
 	s.server = &http.Server{Handler: s.handler}
-	err = s.server.Serve(lis)
+	if s.certFile != "" && s.keyFile != "" {
+		err = s.server.ServeTLS(lis, s.certFile, s.keyFile)
+	} else {
+		err = s.server.Serve(lis)
+	}
 	return
 }
 
 func (s *defaultHTTPServer) WithHandler(h http.Handler) {
 	s.handler = h
+}
+
+func (s *defaultHTTPServer) WithCert(certFile, keyFile string) {
+	s.certFile = certFile
+	s.keyFile = keyFile
 }
 
 func (s *defaultHTTPServer) Shutdown(ctx context.Context) error {
@@ -116,6 +127,10 @@ func (s *fakeHandler) Serve(lis net.Listener) (err error) {
 }
 
 func (s *fakeHandler) WithHandler(h http.Handler) {
+	// do nothing due to this is a fake method
+}
+
+func (s *fakeHandler) WithCert(certFile, keyFile string) {
 	// do nothing due to this is a fake method
 }
 
