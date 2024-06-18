@@ -6,18 +6,25 @@ weight = -98
 You could install `api-testing` via Helm chart:
 
 ```shell
-helm install atest oci://docker.io/linuxsuren/api-testing \
-    --version v0.0.2-helm \
-    --set service.type=NodePort
+helm install atest oci://ghcr.io/linuxsuren/api-testing \
+    --version v0.0.3-helm \
+    --set image.tag=master \
+    --set image.registry=ghcr.io \
+    --set serviceMonitor.enabled=true \
+    --set service.type=NodePort \
+    --set service.nodePort=30002
 ```
 
 or upgrade it:
 
 ```shell
-helm upgrade atest oci://docker.io/surenpi/api-testing \
-    --version v0.0.2-helm \
+helm upgrade atest oci://ghcr.io/linuxsuren/api-testing \
+    --version v0.0.3-helm \
     --set image.tag=master \
-    --set replicaCount=3
+    --set serviceMonitor.enabled=true \
+    --set replicaCount=1 \
+    --set service.type=NodePort \
+    --set service.nodePort=30002
 ```
 
 ## SkyWalking
