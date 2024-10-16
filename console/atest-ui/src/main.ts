@@ -4,6 +4,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import zhCn from 'element-plus/dist/locale/zh-cn.mjs'
 import enUS from 'element-plus/dist/locale/en.mjs'
+import { defineAsyncComponent } from 'vue';
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import introJs from 'intro.js'
@@ -13,6 +14,7 @@ import en from './locales/en.json'
 import zh from './locales/zh.json'
 import ClientMonitor from 'skywalking-client-js'
 import { name, version } from '../package'
+import { parse, compileTemplate, compileScript } from '@vue/compiler-sfc';
 
 const app = createApp(App)
 
@@ -46,6 +48,40 @@ app.use(ElementPlus, {
   locale: lang === 'zh' ? zhCn : enUS
 })
 app.use(i18n)
+app.config.globalProperties.$app = app;
+
+const vueFileContent = `
+<template>
+  <div>Hello, world! Good</div>
+</template>
+
+<script>
+export default {
+  name: 'MyComponent'
+}
+</script>
+`;
+
+const { descriptor } = parse(vueFileContent, {
+  filename: 'xx.vue'
+});
+const { code } = compileTemplate({
+  id: 'xx',
+  filename: 'xx.vue',
+  source: descriptor.template?.content ?? '',
+})
+console.log(code)
+const MyAsyncComponent = defineAsyncComponent(() => {
+  return new Promise((resolve, reject) => {
+    // 这里你可以使用编译后的代码来定义组件
+    const compiledComponent = {
+      template: descriptor.template.content,
+      script: code
+    };
+    resolve(compiledComponent);
+  });
+});
+app.component('hello', MyAsyncComponent);
 
 app.mount('#app')
 

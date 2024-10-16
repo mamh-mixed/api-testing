@@ -81,6 +81,11 @@ const toHistoryPanel = ({ ID: selectID, panelName: historyPanelName }) => {
   panelName.value = historyPanelName;
 }
 
+const htmlContent = ref(`
+<div style="text-align: center;">
+  1========
+</div>
+`)
 </script>
 
 <template>
@@ -125,6 +130,8 @@ const toHistoryPanel = ({ ID: selectID, panelName: historyPanelName }) => {
     </el-aside>
 
     <el-main style="padding-top: 5px; padding-bottom: 5px;">
+      <hello/>
+      <div v-html="htmlContent"></div>
       <div style="position: absolute; top: 10px; right: 20px;">
         <el-col style="display: flex; align-items: center;">
           <el-tag style="font-size: 18px;">{{ t('language') }}</el-tag>
