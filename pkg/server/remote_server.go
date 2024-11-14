@@ -28,6 +28,7 @@ import (
 	"path/filepath"
 	reflect "reflect"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -1182,6 +1183,9 @@ func (s *server) CreateStore(ctx context.Context, in *Store) (reply *Store, err 
 
 	if store.Kind.URL == "" {
 		store.Kind.URL = fmt.Sprintf("unix://%s", home.GetExtensionSocketPath(store.Kind.Name))
+		if runtime.GOOS == "windows" {
+			store.Kind.URL = fmt.Sprintf(`\\.\pipe\%s`, home.GetExtensionSocketPath(store.Kind.Name))
+		}
 	}
 
 	if err = storeFactory.CreateStore(store); err == nil && s.storeExtMgr != nil {

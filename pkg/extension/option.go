@@ -17,8 +17,10 @@ package extension
 
 import (
 	"fmt"
+	"github.com/natefinch/npipe"
 	"net"
 	"os"
+	"runtime"
 
 	"github.com/linuxsuren/api-testing/pkg/runner/monitor"
 	"github.com/linuxsuren/api-testing/pkg/server"
@@ -34,6 +36,7 @@ import (
 type Extension struct {
 	Port   int
 	Socket string
+	Pipe   string
 
 	kind string
 	name string
@@ -52,12 +55,17 @@ func (o *Extension) AddFlags(flags *pflag.FlagSet) {
 	flags.IntVarP(&o.Port, "port", "p", o.port, "The port to listen on")
 	flags.StringVarP(&o.Socket, "socket", "", "",
 		fmt.Sprintf("The socket to listen on, for instance: /var/run/%s.sock", o.GetFullName()))
+	flags.StringVarP(&o.Pipe, "pipe", "", "",
+		fmt.Sprintf(`The named pipe to listen on \\.\pipe\%s`, o.GetFullName()))
 }
 
 func (o *Extension) GetListenAddress() (protocol, address string) {
 	if o.Socket != "" {
 		protocol = "unix"
 		address = o.Socket
+	} else if o.Pipe != "" {
+		protocol = "pipe"
+		address = fmt.Sprintf(o.Pipe, o.GetFullName())
 	} else {
 		protocol = "tcp"
 		address = fmt.Sprintf(":%d", o.Port)
@@ -77,7 +85,12 @@ func CreateRunner(ext *Extension, c *cobra.Command, remoteServer remote.LoaderSe
 	}
 
 	var lis net.Listener
-	lis, err = net.Listen(protocol, address)
+	switch runtime.GOOS {
+	case "windows":
+		lis, err = npipe.Listen(address)
+	default:
+		lis, err = net.Listen(protocol, address)
+	}
 	if err != nil {
 		return
 	}

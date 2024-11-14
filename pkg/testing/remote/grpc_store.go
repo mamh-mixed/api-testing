@@ -19,6 +19,9 @@ package remote
 import (
 	context "context"
 	"errors"
+	"github.com/natefinch/npipe"
+	"net"
+	"strings"
 	"time"
 
 	"github.com/linuxsuren/api-testing/pkg/logging"
@@ -46,13 +49,27 @@ func NewGRPCloaderFromStore() testing.StoreWriterFactory {
 func (g *gRPCLoader) NewInstance(store testing.Store) (writer testing.Writer, err error) {
 	address := store.Kind.URL
 
+	grpcLogger.Info("new instance", "address", address)
 	var conn *grpc.ClientConn
-	if conn, err = grpc.Dial(address, grpc.WithInsecure()); err == nil {
-		writer = &gRPCLoader{
-			store:  &store,
-			ctx:    WithStoreContext(context.Background(), &store),
-			client: NewLoaderClient(conn),
-			conn:   conn,
+	if strings.Contains(address, `\\.\pipe`) {
+		if conn, err = grpc.Dial("pipe", grpc.WithInsecure(), grpc.WithContextDialer(func(c context.Context, s string) (net.Conn, error) {
+			return npipe.Dial(address)
+		})); err == nil {
+			writer = &gRPCLoader{
+				store:  &store,
+				ctx:    WithStoreContext(context.Background(), &store),
+				client: NewLoaderClient(conn),
+				conn:   conn,
+			}
+		}
+	} else {
+		if conn, err = grpc.Dial(address, grpc.WithInsecure()); err == nil {
+			writer = &gRPCLoader{
+				store:  &store,
+				ctx:    WithStoreContext(context.Background(), &store),
+				client: NewLoaderClient(conn),
+				conn:   conn,
+			}
 		}
 	}
 	return

@@ -23,6 +23,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	sync "sync"
 	"syscall"
@@ -96,14 +97,24 @@ func (s *storeExtManager) Start(name, socket string) (err error) {
 	}
 	targetDir := home.GetUserBinDir()
 	targetBinaryFile := filepath.Join(targetDir, name)
+	if s.execer.OS() == "windows" {
+		targetBinaryFile += ".exe"
+	}
 
 	var binaryPath string
 	if _, err = os.Stat(targetBinaryFile); err == nil {
 		binaryPath = targetBinaryFile
 	} else {
-		binaryPath, err = s.execer.LookPath(name)
+		serverLogger.Info("not found extension", "targetBinaryFile", targetBinaryFile)
+
+		switch s.execer.OS() {
+		case "windows":
+			binaryPath, err = s.execer.LookPath(name + ".exe")
+		default:
+			binaryPath, err = s.execer.LookPath(name)
+		}
 		if err != nil {
-			err = fmt.Errorf("not found extension, try to download it.")
+			err = fmt.Errorf("not found extension [%s], try to download it, %v", name, err)
 			go func() {
 				reader, dErr := s.ociDownloader.Download(name, "", "")
 				if dErr != nil {
@@ -138,8 +149,15 @@ func (s *storeExtManager) startPlugin(socketURL, plugin, pluginName string) (err
 	s.extStatusMap[pluginName] = true
 	s.lock.Unlock()
 
-	if err = s.execer.RunCommandWithIO(plugin, "", os.Stdout, os.Stderr, s.processChan, "--socket", socketFile); err != nil {
-		serverLogger.Info("failed to start ext manager", "socket", socketURL, "error: ", err.Error())
+	switch runtime.GOOS {
+	case "windows":
+		if err = s.execer.RunCommandWithIO(plugin, "", os.Stdout, os.Stderr, s.processChan, "--pipe", socketFile); err != nil {
+			serverLogger.Info("failed to start ext manager", "error: ", err.Error())
+		}
+	default:
+		if err = s.execer.RunCommandWithIO(plugin, "", os.Stdout, os.Stderr, s.processChan, "--socket", socketFile); err != nil {
+			serverLogger.Info("failed to start ext manager", "socket", socketURL, "error: ", err.Error())
+		}
 	}
 	return
 }
