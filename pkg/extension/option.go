@@ -85,7 +85,7 @@ func CreateRunner(ext *Extension, c *cobra.Command, remoteServer remote.LoaderSe
 	gRPCServer := grpc.NewServer()
 	remote.RegisterLoaderServer(gRPCServer, remoteServer)
 	reflection.Register(gRPCServer)
-	c.Printf("%s@%s is running at %s\n", ext.GetFullName(), version.GetVersion(), address)
+	c.Printf("%s@%s is running at %s\n", ext.GetFullName(), version.GetVersion(), lis.Addr().String())
 
 	RegisterStopSignal(c.Context(), func() {
 		_ = os.Remove(ext.Socket)
