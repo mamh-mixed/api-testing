@@ -130,16 +130,22 @@ func (s *storeExtManager) Start(name, socket string) (err error) {
 }
 
 func (s *storeExtManager) startPlugin(socketURL, plugin, pluginName string) (err error) {
-	socketFile := strings.TrimPrefix(socketURL, s.socketPrefix)
-	_ = os.RemoveAll(socketFile) // always deleting the socket file to avoid start failing
+	if strings.HasPrefix(socketURL, s.socketPrefix) {
+		socketFile := strings.TrimPrefix(socketURL, s.socketPrefix)
+		_ = os.RemoveAll(socketFile) // always deleting the socket file to avoid start failing
 
-	s.lock.Lock()
-	s.filesNeedToBeRemoved = append(s.filesNeedToBeRemoved, socketFile)
-	s.extStatusMap[pluginName] = true
-	s.lock.Unlock()
+		s.lock.Lock()
+		s.filesNeedToBeRemoved = append(s.filesNeedToBeRemoved, socketFile)
+		s.extStatusMap[pluginName] = true
+		s.lock.Unlock()
 
-	if err = s.execer.RunCommandWithIO(plugin, "", os.Stdout, os.Stderr, s.processChan, "--socket", socketFile); err != nil {
-		serverLogger.Info("failed to start ext manager", "socket", socketURL, "error: ", err.Error())
+		if err = s.execer.RunCommandWithIO(plugin, "", os.Stdout, os.Stderr, s.processChan, "--socket", socketFile); err != nil {
+			serverLogger.Info("failed to start ext manager", "socket", socketURL, "error: ", err.Error())
+		}
+	} else if len(strings.Split(socketURL, ":")) == 2 {
+		if err = s.execer.RunCommandWithIO(plugin, "", os.Stdout, os.Stderr, s.processChan, "--port", strings.Split(socketURL, ":")[1]); err != nil {
+			serverLogger.Info("failed to start ext manager", "socket", socketURL, "error: ", err.Error())
+		}
 	}
 	return
 }
