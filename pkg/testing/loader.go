@@ -32,6 +32,8 @@ type Loader interface {
 	GetTheme(string) (string, error)
 	GetBindings() ([]string, error)
 	GetBinding(string) (string, error)
+	GetMenus() ([]string, error)
+	GetPage(string) (string, error)
 }
 type DataResult struct {
 	Pairs           map[string]string

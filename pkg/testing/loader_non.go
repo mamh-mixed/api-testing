@@ -179,3 +179,13 @@ func (l *nonLoader) GetBinding(name string) (result string, err error) {
 	err = fmt.Errorf("not support")
 	return
 }
+
+func (l *nonLoader) GetMenus() (result []string, err error) {
+	err = fmt.Errorf("not support")
+	return
+}
+
+func (l *nonLoader) GetPage(name string) (_ string, err error) {
+	err = fmt.Errorf("not support")
+	return
+}

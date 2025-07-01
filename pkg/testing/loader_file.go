@@ -577,3 +577,22 @@ func (l *fileLoader) GetBinding(name string) (result string, err error) {
 	}
 	return
 }
+
+func (l *fileLoader) GetMenus() (result []string, err error) {
+	dataDir := home.GetMenuDir()
+	_ = filepath.WalkDir(dataDir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !d.IsDir() && filepath.Ext(path) == ".json" {
+			result = append(result, strings.TrimSuffix(filepath.Base(path), ".json"))
+		}
+		return nil
+	})
+	return
+}
+
+func (l *fileLoader) GetPage(name string) (string, error) {
+	return "", fmt.Errorf("not support")
+}

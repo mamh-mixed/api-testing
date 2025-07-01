@@ -373,6 +373,26 @@ func (g *gRPCLoader) GetBinding(name string) (result string, err error) {
 	return
 }
 
+func (g *gRPCLoader) GetMenus() (result []string, err error) {
+	var simpleList *server.SimpleList
+	if simpleList, err = g.client.GetMenus(g.ctx, &server.Empty{}); err == nil && simpleList.Data != nil {
+		for _, item := range simpleList.Data {
+			result = append(result, item.Key)
+		}
+	}
+	return
+}
+
+func (g *gRPCLoader) GetPage(name string) (result string, err error) {
+	var pageData *server.CommonResult
+	if pageData, err = g.client.GetPage(g.ctx, &server.SimpleName{
+		Name: name,
+	}); err == nil && pageData != nil {
+		result = pageData.Message
+	}
+	return
+}
+
 func (g *gRPCLoader) Close() {
 	if g.conn != nil {
 		g.conn.Close()

@@ -913,6 +913,16 @@ const GetBinding = (name: string, callback: (d: any) => void | null) => {
         .then(DefaultResponseProcess).then(callback)
 }
 
+const GetMenus = (callback: (d: any) => void | null) => {
+    return fetch(`/api/v1/menus`, {})
+        .then(DefaultResponseProcess).then(callback)
+}
+
+const GetPage = (name: string, callback: (d: any) => void | null) => {
+    return fetch(`/api/v1/pages/${name}`, {})
+        .then(DefaultResponseProcess).then(callback)
+}
+
 export const API = {
     DefaultResponseProcess,
     GetVersion,
@@ -926,6 +936,6 @@ export const API = {
     GetSecrets, DeleteSecret, CreateOrUpdateSecret,
     GetSuggestedAPIs, GetSwaggers,
     ReloadMockServer, GetMockConfig, SBOM, DataQuery, DataQueryAsync,
-    GetThemes, GetTheme, GetBinding,
+    GetThemes, GetTheme, GetBinding, GetMenus, GetPage,
     getToken
 }

@@ -45,6 +45,10 @@ func GetBindingDir() string {
 	return filepath.Join(GetUserConfigDir(), "data/key-binding")
 }
 
+func GetMenuDir() string {
+	return filepath.Join(GetUserConfigDir(), "data/menu")
+}
+
 func GetExtensionSocketPath(name string) string {
 	return filepath.Join(GetUserConfigDir(), fmt.Sprintf("%s.sock", name))
 }

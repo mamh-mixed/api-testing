@@ -328,6 +328,16 @@ service ThemeExtension {
             get: "/api/v1/bindings/{name}"
         };
     }
+    rpc GetMenus(Empty) returns (SimpleList) {
+      option (google.api.http) = {
+        get: "/api/v1/menus"
+      };
+    }
+    rpc GetPage(SimpleName) returns (CommonResult) {
+        option (google.api.http) = {
+            get: "/api/v1/pages/{name}"
+        };
+    }
 }
 
 message Suites {

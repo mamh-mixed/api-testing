@@ -2045,6 +2045,8 @@ type ThemeExtensionClient interface {
 	GetTheme(ctx context.Context, in *SimpleName, opts ...grpc.CallOption) (*CommonResult, error)
 	GetBindings(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SimpleList, error)
 	GetBinding(ctx context.Context, in *SimpleName, opts ...grpc.CallOption) (*CommonResult, error)
+	GetMenus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SimpleList, error)
+	GetPage(ctx context.Context, in *SimpleName, opts ...grpc.CallOption) (*CommonResult, error)
 }
 
 type themeExtensionClient struct {
@@ -2091,6 +2093,24 @@ func (c *themeExtensionClient) GetBinding(ctx context.Context, in *SimpleName, o
 	return out, nil
 }
 
+func (c *themeExtensionClient) GetMenus(ctx context.Context, in *Empty, opts ...grpc.CallOption) (*SimpleList, error) {
+	out := new(SimpleList)
+	err := c.cc.Invoke(ctx, "/server.ThemeExtension/GetMenus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *themeExtensionClient) GetPage(ctx context.Context, in *SimpleName, opts ...grpc.CallOption) (*CommonResult, error) {
+	out := new(CommonResult)
+	err := c.cc.Invoke(ctx, "/server.ThemeExtension/GetPage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ThemeExtensionServer is the server API for ThemeExtension service.
 // All implementations must embed UnimplementedThemeExtensionServer
 // for forward compatibility
@@ -2099,6 +2119,8 @@ type ThemeExtensionServer interface {
 	GetTheme(context.Context, *SimpleName) (*CommonResult, error)
 	GetBindings(context.Context, *Empty) (*SimpleList, error)
 	GetBinding(context.Context, *SimpleName) (*CommonResult, error)
+	GetMenus(context.Context, *Empty) (*SimpleList, error)
+	GetPage(context.Context, *SimpleName) (*CommonResult, error)
 	mustEmbedUnimplementedThemeExtensionServer()
 }
 
@@ -2117,6 +2139,12 @@ func (UnimplementedThemeExtensionServer) GetBindings(context.Context, *Empty) (*
 }
 func (UnimplementedThemeExtensionServer) GetBinding(context.Context, *SimpleName) (*CommonResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBinding not implemented")
+}
+func (UnimplementedThemeExtensionServer) GetMenus(context.Context, *Empty) (*SimpleList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMenus not implemented")
+}
+func (UnimplementedThemeExtensionServer) GetPage(context.Context, *SimpleName) (*CommonResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPage not implemented")
 }
 func (UnimplementedThemeExtensionServer) mustEmbedUnimplementedThemeExtensionServer() {}
 
@@ -2203,6 +2231,42 @@ func _ThemeExtension_GetBinding_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ThemeExtension_GetMenus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ThemeExtensionServer).GetMenus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/server.ThemeExtension/GetMenus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ThemeExtensionServer).GetMenus(ctx, req.(*Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ThemeExtension_GetPage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SimpleName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ThemeExtensionServer).GetPage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/server.ThemeExtension/GetPage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ThemeExtensionServer).GetPage(ctx, req.(*SimpleName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ThemeExtension_ServiceDesc is the grpc.ServiceDesc for ThemeExtension service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -2225,6 +2289,14 @@ var ThemeExtension_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBinding",
 			Handler:    _ThemeExtension_GetBinding_Handler,
+		},
+		{
+			MethodName: "GetMenus",
+			Handler:    _ThemeExtension_GetMenus_Handler,
+		},
+		{
+			MethodName: "GetPage",
+			Handler:    _ThemeExtension_GetPage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

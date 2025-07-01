@@ -50,6 +50,8 @@ type LoaderClient interface {
 	GetTheme(ctx context.Context, in *server.SimpleName, opts ...grpc.CallOption) (*server.CommonResult, error)
 	GetBindings(ctx context.Context, in *server.Empty, opts ...grpc.CallOption) (*server.SimpleList, error)
 	GetBinding(ctx context.Context, in *server.SimpleName, opts ...grpc.CallOption) (*server.CommonResult, error)
+	GetMenus(ctx context.Context, in *server.Empty, opts ...grpc.CallOption) (*server.SimpleList, error)
+	GetPage(ctx context.Context, in *server.SimpleName, opts ...grpc.CallOption) (*server.CommonResult, error)
 }
 
 type loaderClient struct {
@@ -303,6 +305,24 @@ func (c *loaderClient) GetBinding(ctx context.Context, in *server.SimpleName, op
 	return out, nil
 }
 
+func (c *loaderClient) GetMenus(ctx context.Context, in *server.Empty, opts ...grpc.CallOption) (*server.SimpleList, error) {
+	out := new(server.SimpleList)
+	err := c.cc.Invoke(ctx, "/remote.Loader/GetMenus", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *loaderClient) GetPage(ctx context.Context, in *server.SimpleName, opts ...grpc.CallOption) (*server.CommonResult, error) {
+	out := new(server.CommonResult)
+	err := c.cc.Invoke(ctx, "/remote.Loader/GetPage", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // LoaderServer is the server API for Loader service.
 // All implementations must embed UnimplementedLoaderServer
 // for forward compatibility
@@ -334,6 +354,8 @@ type LoaderServer interface {
 	GetTheme(context.Context, *server.SimpleName) (*server.CommonResult, error)
 	GetBindings(context.Context, *server.Empty) (*server.SimpleList, error)
 	GetBinding(context.Context, *server.SimpleName) (*server.CommonResult, error)
+	GetMenus(context.Context, *server.Empty) (*server.SimpleList, error)
+	GetPage(context.Context, *server.SimpleName) (*server.CommonResult, error)
 	mustEmbedUnimplementedLoaderServer()
 }
 
@@ -421,6 +443,12 @@ func (UnimplementedLoaderServer) GetBindings(context.Context, *server.Empty) (*s
 }
 func (UnimplementedLoaderServer) GetBinding(context.Context, *server.SimpleName) (*server.CommonResult, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetBinding not implemented")
+}
+func (UnimplementedLoaderServer) GetMenus(context.Context, *server.Empty) (*server.SimpleList, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetMenus not implemented")
+}
+func (UnimplementedLoaderServer) GetPage(context.Context, *server.SimpleName) (*server.CommonResult, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetPage not implemented")
 }
 func (UnimplementedLoaderServer) mustEmbedUnimplementedLoaderServer() {}
 
@@ -921,6 +949,42 @@ func _Loader_GetBinding_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Loader_GetMenus_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(server.Empty)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LoaderServer).GetMenus(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/remote.Loader/GetMenus",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LoaderServer).GetMenus(ctx, req.(*server.Empty))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Loader_GetPage_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(server.SimpleName)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(LoaderServer).GetPage(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/remote.Loader/GetPage",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(LoaderServer).GetPage(ctx, req.(*server.SimpleName))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Loader_ServiceDesc is the grpc.ServiceDesc for Loader service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1035,6 +1099,14 @@ var Loader_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetBinding",
 			Handler:    _Loader_GetBinding_Handler,
+		},
+		{
+			MethodName: "GetMenus",
+			Handler:    _Loader_GetMenus_Handler,
+		},
+		{
+			MethodName: "GetPage",
+			Handler:    _Loader_GetPage_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

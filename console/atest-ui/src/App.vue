@@ -17,6 +17,7 @@ import TestingHistoryPanel from './views/TestingHistoryPanel.vue'
 import MockManager from './views/MockManager.vue'
 import StoreManager from './views/StoreManager.vue'
 import SecretManager from './views/SecretManager.vue'
+import Extension from './views/Extension.vue'
 import WelcomePage from './views/WelcomePage.vue'
 import DataManager from './views/DataManager.vue'
 import MagicKey from './components/MagicKey.vue'
@@ -109,6 +110,11 @@ const theme = ref(getTheme())
 watch(theme, (e) => {
     setTheme(e)
 })
+
+const menus = ref<any[]>([])
+API.GetMenus((d) => {
+  menus.value = d.data
+})
 </script>
 
 <template>
@@ -152,6 +158,10 @@ watch(theme, (e) => {
           <el-icon><location /></el-icon>
           <template #title>{{ t('title.stores') }}</template>
         </el-menu-item>
+        <el-menu-item :index="menu.key" v-for="menu in menus" :key="menu">
+          <el-icon><location /></el-icon>
+          <template #title>{{ menu.key }}</template>
+        </el-menu-item>
       </el-menu>
     </el-aside>
 
@@ -167,6 +177,7 @@ watch(theme, (e) => {
       <MockManager v-else-if="panelName === 'mock'" />
       <StoreManager v-else-if="panelName === 'store'" />
       <SecretManager v-else-if="panelName === 'secret'" />
+      <Extension v-else-if="panelName === 'hello'" :page="panelName" />
       <WelcomePage v-else />
     </el-main>
 

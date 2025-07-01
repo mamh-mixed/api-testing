@@ -1351,6 +1351,35 @@ func (s *server) GetBinding(ctx context.Context, in *SimpleName) (result *Common
 	return
 }
 
+func (s *server) GetMenus(ctx context.Context, _ *Empty) (result *SimpleList, err error) {
+	loader := s.getLoader(ctx)
+	defer loader.Close()
+
+	result = &SimpleList{}
+	var menus []string
+	if menus, err = loader.GetMenus(); err == nil {
+		for _, menu := range menus {
+			result.Data = append(result.Data, &Pair{
+				Key:   menu,
+				Value: "",
+			})
+		}
+	}
+	return
+}
+
+func (s *server) GetPage(ctx context.Context, in *SimpleName) (result *CommonResult, err error) {
+	loader := s.getLoader(ctx)
+	defer loader.Close()
+
+	result = &CommonResult{}
+	result.Message, err = loader.GetPage(in.Name)
+	if err != nil {
+		result.Message = fmt.Sprintf("failed to get binding: %v", err)
+	}
+	return
+}
+
 // implement the mock server
 
 // Start starts the mock server
